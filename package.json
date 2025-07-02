@@ -1,0 +1,27 @@
+{
+  "name": "lush_coding_assignment",
+  "version": "1.0.0",
+  "description": "coding assignment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomalex001/lush_coding_assignment.git"
+  },
+  "author": "Alex Thomas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thomalex001/lush_coding_assignment/issues"
+  },
+  "homepage": "https://github.com/thomalex001/lush_coding_assignment#readme",
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "prisma": "^6.11.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.11.0"
+  }
+}
