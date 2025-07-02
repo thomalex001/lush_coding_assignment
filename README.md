@@ -22,15 +22,30 @@ Installed Prisma:
 ``` 
 npx prisma@latest init --db 
 ```
+
+Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
+with a `DATABASE_URL` environment variable already set
+
+Once this command terminated:
+
+You're logged into Prisma Data Platform.
+A new Prisma Postgres instance was created.
+The prisma/ folder was created with an empty schema.prisma file.
+The DATABASE_URL env var was set in a .env file.
+
 Installed Prisma VS Code Extension
 
-Added sqlite as a provider as per *Note* in assignment instructions:
-
+Added `SQLite` as a provider for simplicity as per *Note* in assignment instructions:
 ```prisma
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")  //Automatically created and stored in .env
 }
+```
+Also changed the `DATABASE_URL` path to reflect this:
+
+```js
+DATABASE_URL="file:./dev.db"
 ```
 
 Created a Prisma Schema:
@@ -46,8 +61,6 @@ model Task {
 
 Used Schema Description (comments to clarify my code)
 
-
-
 Created `.gitignore` file and added the following:
 ```
 node_modules
@@ -55,4 +68,38 @@ node_modules
 .env
 ```
 
+Added boilerplate code taken from `Prisma /docs` to send queries with Prisma ORM:
+```js
+import { PrismaClient } from '../src/generated/prisma'
+import { withAccelerate } from '@prisma/extension-accelerate'
 
+const prisma = new PrismaClient().$extends(withAccelerate())
+
+async function main() {
+
+  const task = await prisma.task.create({
+    data: {
+      id: "eqiofjeoqfjeioq",
+      title: 'Save Planet',
+      completed: false,
+    },
+  })
+  console.log(task)
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })
+```
+
+Ran the commands below to test:
+```
+npx prisma migrate dev --name init
+npx prisma generate
+```
