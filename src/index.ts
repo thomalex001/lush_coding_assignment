@@ -7,8 +7,8 @@ async function main() {
 
   const task = await prisma.task.create({
     data: {
-      id: "eqiofjeoqfjeioq",
-      title: 'Save Planet',
+      id: "eqiofjeoqfjeioqee",
+      title: 'Run Marathon',
       completed: false,
     },
   })

@@ -26,13 +26,6 @@ npx prisma@latest init --db
 Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
 with a `DATABASE_URL` environment variable already set
 
-Once this command terminated:
-
-You're logged into Prisma Data Platform.
-A new Prisma Postgres instance was created.
-The prisma/ folder was created with an empty schema.prisma file.
-The DATABASE_URL env var was set in a .env file.
-
 Installed Prisma VS Code Extension
 
 Added `SQLite` as a provider for simplicity as per *Note* in assignment instructions:
@@ -102,4 +95,14 @@ Ran the commands below to test:
 ```
 npx prisma migrate dev --name init
 npx prisma generate
+npx tsx src/index.ts   
 ```
+
+Installed Pothos and Apollo Server and GraphQL:
+```
+npm install --save @pothos/core 
+npm install @apollo/server graphql
+```
+
+npm install @apollo/server graphql @pothos/core @pothos/plugin-prisma @prisma/client
+npm install @types/node tsx --save-dev
