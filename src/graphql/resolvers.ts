@@ -43,8 +43,6 @@ export const resolvers = {
       const existing = await prisma.task.findUnique({
         where: { id: args.id }
       });
-
-      // 2️⃣ Not found → return null
       if (!existing) {
         throw new ApolloError(`Error, id: ${args.id} not found`, 'NOT FOUND');
       }
@@ -64,7 +62,6 @@ export const resolvers = {
     },
 
     deleteTask: async (_parent: any, args: { id: string }) => {
-      // 1️⃣ Check if task exists
       const existing = await prisma.task.findUnique({
         where: { id: args.id }
       });

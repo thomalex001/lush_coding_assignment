@@ -4,7 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 const prisma = new PrismaClient().$extends(withAccelerate())
 
 async function main() {
-
+  // MANUALLY TESTING PRISMA DB IS WORKING
   const task = await prisma.task.create({
     data: {
       id: "eqiofjeoqfjeioqee",

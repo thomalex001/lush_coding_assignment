@@ -4,7 +4,8 @@
   "description": "coding assignment",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pothos:generate": "pothos-cli"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "@prisma/client": "^6.11.1",
     "@prisma/extension-accelerate": "^2.0.1",
     "apollo-server": "^3.13.0",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "graphql-scalars": "^1.24.2"
   }
 }
