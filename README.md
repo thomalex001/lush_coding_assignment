@@ -10,13 +10,13 @@ Ensure that you have cloned repositories onto your machine and follow these step
 2. Then run the command `npm start` to run program in your local environment.
 
 ### Dependencies
-*   apollo-server
-*   pothos/core
-*   pothos/plugin-prisma
-*   prisma/client
-*   prisma/extension-accelerate
-*   graphql
-*   graphql-scalars
+* apollo-server (Apollo Server)
+* pothos/core (Core schema builder)
+* pothos/plugin-prisma (Prisma integration)
+* prisma/client (Prisma db client)
+* prisma/extension-accelerate (Performance optimization)
+* graphql (GraphQL JS implementation)
+* graphql-scalars (Custom scalars)
 
 
 ### Technologies Used
@@ -26,7 +26,7 @@ Ensure that you have cloned repositories onto your machine and follow these step
 * Visual Studio Code
 * Apollo Server
 * Git/GitHub
-* Pothos
+* Pothos (GraphQL Schema Builder)
 * Prisma
 
 ## Installation
@@ -43,20 +43,16 @@ npm install --save-dev typescript @types/node
 npx tsc --init
 ```
 
-Setup `tsconfig.json` file:
-```json
-outDir: dist	// Keeps compiled files separate
-```
-
+## Prisma
 Installed Prisma:
 ``` 
 npx prisma@latest init --db 
 ```
 
-* Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
+Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
 with a `DATABASE_URL` environment variable already set
 
-* Installed Prisma VS Code Extension
+Installed Prisma VS Code Extension
 
 
 In `schema.prisma` I added `SQLite` as a provider for simplicity as per *Note* in assignment instructions:
@@ -90,7 +86,7 @@ node_modules
 .env
 ```
 
-Added boilerplate code taken from `Prisma /docs` to send queries with Prisma ORM:
+Added boilerplate code taken from `Prisma /docs` in `src/index.ts`to send queries with Prisma ORM:
 ```js
 import { PrismaClient } from '../src/generated/prisma'
 import { withAccelerate } from '@prisma/extension-accelerate'
@@ -131,9 +127,8 @@ npx tsx src/index.ts
 As I was not familiar with Pothos I decided to first get GraphQL and Apollo working together.
 I have left the GraphQL files in `src/graphql` however they are currently unused
 
-Installed Pothos, Apollo Server and GraphQL:
+Installed Apollo Server and GraphQL:
 ```
-npm install --save @pothos/core 
 npm install @apollo/server graphql
 ```
 
@@ -203,10 +198,21 @@ export const resolvers = {
 }
 ```
 
-I then added all other *Queries/Mutations* and tested them on the Apollo Server (browser).
+I then added all other *Queries/Mutations* and tested them on the Apollo Server (browser):
+
+![graphql ](./src/media/graphql.png "")
+
+
 Once happy, I moved to migrating to Pothos.
 
 ## Pothos
+
+Read documentation on Pothos to understand what the project structure should look like.
+
+Installed Pothos:
+```js
+npm install --save @pothos/core 
+```
 
 Created `src/builder.ts` file to set up the schema builder:
 
@@ -222,7 +228,7 @@ export const builder = new SchemaBuilder<{
 });
 ```
 
-Created `src/schema.ts` to match the `prisma.schema` file:
+Created `src/schema/models/task.ts` to match the `prisma.schema` file:
 
 ```js
 import { builder } from './builder';
@@ -237,7 +243,7 @@ builder.prismaObject('Task', {
   }),
 });
 ```
-Then created `src/resolvers/tasks.ts` file with my first query to return a list
+Then created `src/schema/query.ts` file with my first query to return a list
 of all tasks:
 
 ```js
@@ -263,7 +269,83 @@ builder.queryType({
 });
 ```
 
-As I had previously made all the queries and mutations on the Apollo Server with GraphQL, adding and testing each query with Pothos was straight forward.
+Ensured model definition, query and mutation files are imported in `src/server.ts` :
+
+```js
+import './schema/models/task'; //MODEL DEFINITION
+import './schema/query' // FILE CONTAINING QUERIES
+import './schema/mutation' // FILE CONTAINING MUTATIONS
+```
+
+As I had previously made all the **Queries and Mutations** on the Apollo Server with GraphQL, adding and testing each with Pothos was straight forward.
+
+Please see below the list of queries and mutations:
+```gql
+query getTasks {
+  # Returns a list of all tasks
+  tasks {
+    id
+    title
+    completed
+    createdAt
+    updatedAt
+  }
+}
+query getTaskById {
+  # Returns "null" if not found
+  task (id: "05e76901-cb3a-4902-9260-f1d5e1bb4cfa") {
+    id
+    title
+    completed
+    createdAt
+    updatedAt
+  }
+}
+query getTaskFiltered {
+  # Include an optional search argument (search: String)
+  # Returns a list of all tasks matching the string => "Go to the gym"
+  tasks(search: "Go") {
+    id
+    title
+    completed
+  }
+}
+mutation addTask {
+  # Creates a new task with the given title and assigns a unique ID
+  # Sets "completed" to false by default
+  # Returns the newly created task.
+  addTask(title: "Go to the gym") {
+    id
+    title
+    completed
+    createdAt
+  }
+}
+mutation toggleTask {
+  # "Go to the gym" is now set to "completed: true"
+  # Updates the updatedAt timestamp
+  # Returns the updated task or "null" if not found.
+  toggleTask(
+    id: "674da772-4aff-491f-a24b-ae78e716004d"
+    title: "Go to the gym"
+    completed: true
+  ) {
+    id
+    title
+    completed
+    updatedAt
+  }
+}
+mutation deleteTask{
+  # Deletes a task by its ID.
+  # Returns the deleted task or "null" if not found.
+  deleteTask(id: "21abd6cc-597c-45f7-bfed-baab266da9fd") {
+    title
+    id
+    completed
+  }
+}
+```
 
 Note: As GraphQL doesn’t have a built-in DateTime scalar type TypeScript was throwing an error, I had to install `graphql-scalars` and add these lines to the `builder.ts` file:
 
@@ -277,3 +359,21 @@ export const builder = new SchemaBuilder<{
   };
   builder.addScalarType('DateTime', DateTimeResolver, {});
   ```
+
+  ## Challenges
+* Pothos
+
+## Wins
+* Connecting Apollo with GraphQL
+* Migrating was straight forward as when I encountered errors, I knew this was coming
+from Pothos
+
+## Key Learning/Takeaways
+* GraphQL Queries and Mutations
+* Creating the database with Prisma was enjoyable
+* Pothos was totally new but the documentation was very clear which helped a lot
+
+## Future Improvements
+* 
+
+## THANKS FOR READING!

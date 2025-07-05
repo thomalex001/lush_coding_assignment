@@ -4,8 +4,9 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 // import { resolvers } from './graphql/resolvers'
 import { PrismaClient } from '../src/generated/prisma';
 import { builder } from './builder';
-import './schema';
-import './resolvers/tasks'
+import './schema/models/task';
+import './schema/query'
+import './schema/mutation'
 
 const server = new ApolloServer({
   schema: builder.toSchema(),
