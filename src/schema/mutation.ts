@@ -5,7 +5,8 @@ import { validateArgs } from '../middleware/zodValidate';
 import {
   addTaskSchema,
   toggleTaskSchema,
-  deleteTaskSchema
+  deleteTaskSchema,
+  deleteTasksSchema
 } from '../validation/task';
 
 builder.mutationType({
@@ -81,25 +82,29 @@ builder.mutationType({
   })
 });
 
-//ADD A SUBTASK
-builder.mutationField('addSubtask', (t) =>
+//DELETE MANY TASKS
+builder.mutationField('deleteTasks', (t) =>
   t.prismaField({
-    type: 'Task',
+    type: ['Task'],
     args: {
-      title: t.arg.string({ required: true }),
-      parentId: t.arg.string({ required: true })
+      ids: t.arg.stringList({ required: true })
     },
-    resolve: async (query, _parent, args, ctx) => {
-      return ctx.prisma.task.create({
-        data: {
-          title: args.title,
-          parent: {
-            connect: { id: args.parentId }
-          }
-        },
+    resolve: async (query, _parent, args, context) => {
+      const validatedArgs = validateArgs(deleteTasksSchema, args);
+      const tasksToDelete = await context.prisma.task.findMany({
+        where: { id: { in: args.ids } },
         ...query
       });
+
+      if (!tasksToDelete) {
+        throw new ApolloError(`Error, ids: ${args.ids} not found`, 'NOT_FOUND');
+      }
+      // Step 2: Delete the tasks
+      await context.prisma.task.deleteMany({
+        where: { id: { in: args.ids } }
+      });
+
+      return tasksToDelete;
     }
   })
 );
-

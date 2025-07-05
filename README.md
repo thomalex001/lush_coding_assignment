@@ -7,8 +7,8 @@ Build a basic GraphQL API server using NodeJS, TypeScript, Apollo Server, Prisma
 Clone repository onto your machine and follow these steps:
 
 1. In CLI run `npm i` on the root level to install dependencies.
-2. Then run the command `npm run dev` to run program in your local environment.
-3. Server ready at http://localhost:4000/
+2. Follow the link to the server at http://localhost:4000/
+4. On your browser, you will be able to make GraphQL queries (add/delete tasks etc..) to the database (examples further down in the Pothos section)
 
 ### Dependencies
 * apollo-server (Apollo Server)
@@ -245,7 +245,7 @@ builder.prismaObject('Task', {
   }),
 });
 ```
-Then created `src/schema/query.ts` file with my first query to return a list
+Then created `src/schema/query.ts` file with my first resolver function to return a list
 of all tasks:
 
 ```js
@@ -417,9 +417,58 @@ Added other types of validation for each Query/Mutation and tested on Apollo Ser
 
 
 # Bonus Points:
-1. Complex error scenarios.
+### *Discussing in your README how you would more complex error scenarios.*
+I think that it is great that GraphQL and Apollo already have error handling built in as it is important to receive clear error messages
+when building an application. It helps debugging quickly and efficiently and improves DX overall.
+I found Zod to be really helpful as GraphQL/Apollo still had limitations with their errors.
+This is crucial for developers but also users as it keeps the application user friendly and accessible on the frontend.
+Ideally we would want each error to return a clear message, the location of the file and which line, and also a snipet of the code causing the issue.
+Suggestions on how to fix the error ("did you mean this?" for example) is always welcome!
 
-2. Add any additional queries or mutations you feel would enhance the project (no more than 2).
+### *Add any additional queries or mutations you feel would enhance the project (no more than 2).*
+Added `getTasksByDateRange` and `deleteTasks` with Zod validation. 
+Resolver and GraphQL query for *deleteTasks* below:
+
+```js
+//DELETE MANY TASKS
+builder.mutationField('deleteTasks', (t) =>
+  t.prismaField({
+    type: ['Task'],
+    args: {
+      ids: t.arg.stringList({ required: true })
+    },
+    resolve: async (query, _parent, args, context) => {
+      const validatedArgs = validateArgs(deleteTasksSchema, args);
+      const tasksToDelete = await context.prisma.task.findMany({
+        where: { id: { in: args.ids } },
+        ...query
+      });
+
+      if (!tasksToDelete) {
+        throw new ApolloError(`Error, ids: ${args.ids} not found`, 'NOT_FOUND');
+      }
+      await context.prisma.task.deleteMany({
+        where: { id: { in: args.ids } }
+      });
+
+      return tasksToDelete;
+    }
+  })
+);
+```
+GraphQL Query:
+```js
+mutation deleteTasks{
+  deleteTasks(ids: [
+    "4bb92759-7bf0-49f6-bc6d-443ea56c6e9", "9c79fd1b-a81f-401f-8b53-81f0f7d2fcd",
+    ]) {
+    id
+    title
+    completed
+  }
+}
+```
+
 
   ## Challenges
 * Relationships between Prisma/Pothos/Apollo were challenging to grasp at first.
@@ -434,7 +483,8 @@ from Pothos.
 ## Key Learning/Takeaways
 * GraphQL Queries and Mutations.
 * Creating the database with Prisma was enjoyable.
-* Pothos was totally new but the documentation was very clear which helped a lot.
+* Pothos was new but the documentation was very clear which helped a lot.
+* Zod was also new and reminded me of Jest and so easier to handle.
 
 ## Future Improvements
 * 

@@ -6,8 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
-  
 }
 generator pothos {
   provider = "prisma-pothos-types"
@@ -23,9 +21,5 @@ model Task {
   completed  Boolean  @default(false)            // Defaults to false
   createdAt  DateTime @default(now())            // Auto-generated timestamp
   updatedAt  DateTime @updatedAt                 // Auto-updates on every change
-    
-  parentId    String?   
-  parent      Task?     @relation("Subtasks", fields: [parentId], references: [id])
-  subtasks    Task[]    @relation("Subtasks") // children
 }
 

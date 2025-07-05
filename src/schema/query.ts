@@ -1,6 +1,7 @@
 import { builder } from '../builder';
-import { getTaskByIdSchema, getTasksSchema } from '../validation/task';
+import { getTaskByIdSchema, getTasksSchema, getTaskByDateRangeSchema } from '../validation/task';
 import { validateArgs } from '../middleware/zodValidate';
+import { GraphQLDateTime } from 'graphql-scalars';
 
 builder.queryType({
   fields: (t) => ({
@@ -23,6 +24,7 @@ builder.queryType({
         });
       }
     }),
+
     // GET SINGLE TASK BY ID
     task: t.prismaField({
       type: 'Task',
@@ -32,7 +34,7 @@ builder.queryType({
       },
       resolve: (query, _parent, args, context) => {
         const validatedArgs = validateArgs(getTaskByIdSchema, args);
-        
+
         return context.prisma.task.findUnique({
           where: { id: args.id },
           ...query
@@ -41,3 +43,27 @@ builder.queryType({
     })
   })
 });
+
+// GET TASKS BY DATE RANGE
+builder.queryField('tasksByDateRange', (t) =>
+  t.prismaField({
+    type: ['Task'],
+    args: {
+      from: t.arg({ type: 'DateTime', required: true }),
+      to: t.arg({ type: 'DateTime', required: true })
+    },
+    resolve: async (query, _parent, args, ctx) => {
+      const validatedArgs = validateArgs(getTaskByDateRangeSchema, args);
+
+      return ctx.prisma.task.findMany({
+        where: {
+          createdAt: {
+            gte: args.from,
+            lte: args.to
+          }
+        },
+        ...query
+      });
+    }
+  })
+);
