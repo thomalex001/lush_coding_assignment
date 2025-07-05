@@ -7,5 +7,7 @@ builder.prismaObject('Task', {
     completed: t.exposeBoolean('completed'),
     createdAt: t.expose('createdAt', { type: 'DateTime' }),
     updatedAt: t.expose('updatedAt', { type: 'DateTime' }),
+    subtasks: t.relation('subtasks'),
+    parent: t.relation('parent', { nullable: true }),
   }),
 });

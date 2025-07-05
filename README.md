@@ -4,10 +4,11 @@
 Build a basic GraphQL API server using NodeJS, TypeScript, Apollo Server, Prisma, and Pothos GraphQL to manage a simple list of tasks. This assignment aims to evaluate your understanding of GraphQL principles, schema design with Pothos, TypeScript usage, and general backend development practices.
 
 ## Getting Started/Code Installation
-Ensure that you have cloned repositories onto your machine and follow these steps:
+Clone repository onto your machine and follow these steps:
 
-1. In the front-end CLI, run `npm i` on the root level to install dependencies.
-2. Then run the command `npm start` to run program in your local environment.
+1. In CLI run `npm i` on the root level to install dependencies.
+2. Then run the command `npm run dev` to run program in your local environment.
+3. Server ready at http://localhost:4000/
 
 ### Dependencies
 * apollo-server (Apollo Server)
@@ -17,6 +18,7 @@ Ensure that you have cloned repositories onto your machine and follow these step
 * prisma/extension-accelerate (Performance optimization)
 * graphql (GraphQL JS implementation)
 * graphql-scalars (Custom scalars)
+* Zod (Validate Queries)
 
 
 ### Technologies Used
@@ -50,9 +52,9 @@ npx prisma@latest init --db
 ```
 
 Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
-with a `DATABASE_URL` environment variable already set
+with a `DATABASE_URL` environment variable already set.
 
-Installed Prisma VS Code Extension
+Installed Prisma VS Code Extension.
 
 
 In `schema.prisma` I added `SQLite` as a provider for simplicity as per *Note* in assignment instructions:
@@ -125,7 +127,7 @@ npx tsx src/index.ts
 
 ## GraphQL & Apollo
 As I was not familiar with Pothos I decided to first get GraphQL and Apollo working together.
-I have left the GraphQL files in `src/graphql` however they are currently unused
+I have left the GraphQL files in `src/graphql` however they are currently unused.
 
 Installed Apollo Server and GraphQL:
 ```
@@ -269,7 +271,7 @@ builder.queryType({
 });
 ```
 
-Ensured model definition, query and mutation files are imported in `src/server.ts` :
+Ensured model definition, query and mutation files are imported in `src/server.ts`:
 
 ```js
 import './schema/models/task'; //MODEL DEFINITION
@@ -347,7 +349,8 @@ mutation deleteTask{
 }
 ```
 
-Note: As GraphQL doesn’t have a built-in DateTime scalar type TypeScript was throwing an error, I had to install `graphql-scalars` and add these lines to the `builder.ts` file:
+Note: As GraphQL doesn’t have a built-in DateTime scalar type TypeScript was throwing an error,
+I had to install `graphql-scalars` and add these lines to the `builder.ts` file:
 
 ```js
 export const builder = new SchemaBuilder<{
@@ -360,18 +363,78 @@ export const builder = new SchemaBuilder<{
   builder.addScalarType('DateTime', DateTimeResolver, {});
   ```
 
+## Zod Validation
+
+Installed Zod:
+```js
+npm install zod
+```
+### Adding validation to a Query or Mutation in 3 steps.
+
+1. Created a file `src/validation/task.ts` and added the below code:
+
+```js
+import { z } from 'zod';
+
+export const getTasksSchema = z.object({
+  search: z
+  .string()
+  //In this example, Zod will validate the user input only
+  //if no special characters are used in the search
+  .regex(/^[a-zA-Z0-9\s]*$/, "No special characters allowed")
+  .optional()
+});
+```
+2. Created a middleware to handle the error in `src/middleware/zodValidate.ts`:
+```js
+import { ZodSchema } from 'zod';
+
+export function validateArgs<T>(schema: ZodSchema<T>, args: unknown): T {
+  const result = schema.safeParse(args);
+  if (!result.success) {
+    throw new Error(result.error.issues.map(i => i.message).join(', '));
+  }
+  return result.data;
+}
+```
+
+3. Added the below code to the existing query *getTasks* in `src/schema/query.ts`:
+```js
+   resolve: async (query, _parent, args, context) => {
+    // Validating input with Zod through a middleware
+    // In this case: "No special characters allowed"
+        const validatedArgs = validateArgs(getTasksSchema, args);
+        return context.prisma.task.findMany({
+          where: validatedArgs.search
+            ? { title: { contains: validatedArgs.search } }
+            : undefined,
+          orderBy: { createdAt: 'desc' },
+          ...query
+        });
+      }
+```
+Added other types of validation for each Query/Mutation and tested on Apollo Server.
+
+
+# Bonus Points:
+1. Complex error scenarios.
+
+2. Add any additional queries or mutations you feel would enhance the project (no more than 2).
+
   ## Challenges
-* Pothos
+* Relationships between Prisma/Pothos/Apollo were challenging to grasp at first.
+* Pothos was totally new and required some time to get used to.
 
 ## Wins
-* Connecting Apollo with GraphQL
+* Creating Prisma database 
+* Connecting Apollo with GraphQL.
 * Migrating was straight forward as when I encountered errors, I knew this was coming
-from Pothos
+from Pothos.
 
 ## Key Learning/Takeaways
-* GraphQL Queries and Mutations
-* Creating the database with Prisma was enjoyable
-* Pothos was totally new but the documentation was very clear which helped a lot
+* GraphQL Queries and Mutations.
+* Creating the database with Prisma was enjoyable.
+* Pothos was totally new but the documentation was very clear which helped a lot.
 
 ## Future Improvements
 * 
