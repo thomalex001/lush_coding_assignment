@@ -1,6 +1,5 @@
-// src/schema/mutation.ts
 import { builder } from '../builder';
-import { ApolloError } from 'apollo-server-errors';
+import { GraphQLError } from 'graphql';
 import { validateArgs } from '../middleware/zodValidate';
 import {
   addTaskSchema,
@@ -41,7 +40,9 @@ builder.mutationType({
         });
 
         if (!existing) {
-          throw new ApolloError(`Error, id: ${args.id} not found`, 'NOT_FOUND');
+          throw new GraphQLError(`Task with id: ${args.id} not found`, {
+            extensions: { code: 'NOT_FOUND' }
+          });
         }
 
         const data: { title?: string; completed?: boolean } = {};
@@ -57,7 +58,7 @@ builder.mutationType({
       }
     }),
 
-    // DELETE TASK
+    // DELETE SINGLE TASK
     deleteTask: t.prismaField({
       type: 'Task',
       args: {
@@ -70,7 +71,9 @@ builder.mutationType({
         });
 
         if (!existing) {
-          throw new ApolloError(`Error, id: ${args.id} not found`, 'NOT_FOUND');
+          throw new GraphQLError(`Task with id: ${args.id} not found`, {
+            extensions: { code: 'NOT_FOUND' }
+          });
         }
 
         return context.prisma.task.delete({
@@ -97,9 +100,10 @@ builder.mutationField('deleteTasks', (t) =>
       });
 
       if (!tasksToDelete) {
-        throw new ApolloError(`Error, ids: ${args.ids} not found`, 'NOT_FOUND');
+        throw new GraphQLError(`Task with id: ${args.ids} not found`, {
+          extensions: { code: 'NOT_FOUND' }
+        });
       }
-      // Step 2: Delete the tasks
       await context.prisma.task.deleteMany({
         where: { id: { in: args.ids } }
       });

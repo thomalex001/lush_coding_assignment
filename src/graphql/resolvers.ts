@@ -2,7 +2,6 @@ import { PrismaClient } from '../generated/prisma';
 import { ApolloError } from 'apollo-server';
 const prisma = new PrismaClient();
 
-
 export const resolvers = {
   Query: {
     tasks: async (_: any, args: { search?: string }) => {

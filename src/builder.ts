@@ -2,8 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import SchemaBuilder from '@pothos/core';
 import PrismaPlugin from '@pothos/plugin-prisma'; 
 import { DateTimeResolver } from 'graphql-scalars'
-
-// 👇 THIS is the correct import:
 import type { PrismaTypesFromClient } from '@pothos/plugin-prisma';
 
 const prisma = new PrismaClient();
@@ -23,5 +21,5 @@ export const builder = new SchemaBuilder<{
     client: prisma,
   },
 });
-// Add scalar implementation
+// CUSTOM SCALAR TYPE DATETIME
 builder.addScalarType('DateTime', DateTimeResolver, {});

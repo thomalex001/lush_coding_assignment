@@ -1,7 +1,6 @@
 import { builder } from '../builder';
 import { getTaskByIdSchema, getTasksSchema, getTaskByDateRangeSchema } from '../validation/task';
 import { validateArgs } from '../middleware/zodValidate';
-import { GraphQLDateTime } from 'graphql-scalars';
 
 builder.queryType({
   fields: (t) => ({

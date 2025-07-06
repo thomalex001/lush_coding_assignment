@@ -1,8 +1,8 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
-// import { typeDefs } from '../src/graphql/schema'
-// import { resolvers } from './graphql/resolvers'
-import { PrismaClient } from '../src/generated/prisma';
+// import { typeDefs } from '../src/graphql/schema' // GraphQL imports (unused)
+// import { resolvers } from './graphql/resolvers' // GraphQL imports (unused)
+import { PrismaClient } from '@prisma/client';
 import { builder } from './builder';
 import './schema/models/task';
 import './schema/query'

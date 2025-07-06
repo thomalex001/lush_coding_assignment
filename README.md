@@ -1,4 +1,4 @@
-# lush_coding_assignment
+# Lush Coding Assignment - Simple Task List API
 
 ## Objective
 Build a basic GraphQL API server using NodeJS, TypeScript, Apollo Server, Prisma, and Pothos GraphQL to manage a simple list of tasks. This assignment aims to evaluate your understanding of GraphQL principles, schema design with Pothos, TypeScript usage, and general backend development practices.
@@ -6,20 +6,26 @@ Build a basic GraphQL API server using NodeJS, TypeScript, Apollo Server, Prisma
 ## Getting Started/Code Installation
 Clone repository onto your machine and follow these steps:
 
-1. In CLI run `npm i` on the root level to install dependencies.
-2. Follow the link to the server at http://localhost:4000/
-4. On your browser, you will be able to make GraphQL queries (add/delete tasks etc..) to the database (examples further down in the Pothos section)
+1. Ensure you are using the correct NodeJS (22.12.0) version:
+- If you already have NVM installed, simply run the command `nvm use` in your CLI at the root level  which will switch to the correct NodeJS version.
+- If you do not have NVM installed, run the command `nvm install`. This will also install the NodeJS 22.12.0 version.
+- You can check your current version using ` node -v` command.
+2. In CLI run `npm i` on the root level to install dependencies.
+3. Run `npx prisma generate` to allow interacting with the database.
+4. Then run `npm run dev` which will run the `server.ts` file.
+5. Once server is "ready", follow the link at http://localhost:4000/.
+6. On your browser, you will be able to make GraphQL queries (add/delete/toggle tasks etc..) to the database.
+[GraphQL Queries Examples](#graphql-queries)
 
 ### Dependencies
-* apollo-server (Apollo Server)
+* apollo/server (Apollo Server)
 * pothos/core (Core schema builder)
 * pothos/plugin-prisma (Prisma integration)
 * prisma/client (Prisma db client)
 * prisma/extension-accelerate (Performance optimization)
 * graphql (GraphQL JS implementation)
 * graphql-scalars (Custom scalars)
-* Zod (Validate Queries)
-
+* zod (Validate Queries)
 
 ### Technologies Used
 * NodeJS
@@ -31,8 +37,8 @@ Clone repository onto your machine and follow these steps:
 * Pothos (GraphQL Schema Builder)
 * Prisma
 
-## Installation
-Created Git Repo with a `README` file
+## My Initial Setup 
+Created Git Repo with a `README` file.
 
 Initialized NodeJS with `package.json`:
 ```
@@ -51,7 +57,7 @@ Installed Prisma:
 npx prisma@latest init --db 
 ```
 
-Following this command, Prisma created an initial `schema.prisma` file and a `.env` file 
+Following this command, Prisma created an initial `prisma/schema.prisma` file and a `.env` file 
 with a `DATABASE_URL` environment variable already set.
 
 Installed Prisma VS Code Extension.
@@ -81,16 +87,16 @@ model Task {
 }
 ```
 
-Created `.gitignore` file and added the following:
+Created `.gitignore` file and added the following (omitting `.env` as it does not contain private
+keys, only a link to a local file, otherwise I would have included it):
 ```
 node_modules
-/src/generated/prisma
-.env
+.DS_Store
 ```
 
 Added boilerplate code taken from `Prisma /docs` in `src/index.ts`to send queries with Prisma ORM:
 ```js
-import { PrismaClient } from '../src/generated/prisma'
+import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate'
 
 const prisma = new PrismaClient().$extends(withAccelerate())
@@ -127,7 +133,7 @@ npx tsx src/index.ts
 
 ## GraphQL & Apollo
 As I was not familiar with Pothos I decided to first get GraphQL and Apollo working together.
-I have left the GraphQL files in `src/graphql` however they are currently unused.
+Note: I have left the GraphQL files in `src/graphql` however they are currently unused.
 
 Installed Apollo Server and GraphQL:
 ```
@@ -281,6 +287,8 @@ import './schema/mutation' // FILE CONTAINING MUTATIONS
 
 As I had previously made all the **Queries and Mutations** on the Apollo Server with GraphQL, adding and testing each with Pothos was straight forward.
 
+## GraphQL-Queries
+
 Please see below the list of queries and mutations:
 ```gql
 query getTasks {
@@ -379,8 +387,10 @@ import { z } from 'zod';
 export const getTasksSchema = z.object({
   search: z
   .string()
-  //In this example, Zod will validate the user input only
-  //if no special characters are used in the search
+  /* 
+  In this example, Zod will validate the user input only
+  if no special characters are used in the search
+  */
   .regex(/^[a-zA-Z0-9\s]*$/, "No special characters allowed")
   .optional()
 });
@@ -401,8 +411,10 @@ export function validateArgs<T>(schema: ZodSchema<T>, args: unknown): T {
 3. Added the below code to the existing query *getTasks* in `src/schema/query.ts`:
 ```js
    resolve: async (query, _parent, args, context) => {
-    // Validating input with Zod through a middleware
-    // In this case: "No special characters allowed"
+    /* 
+    Validating input with Zod through a middleware
+    In this case: "No special characters allowed" 
+    */
         const validatedArgs = validateArgs(getTasksSchema, args);
         return context.prisma.task.findMany({
           where: validatedArgs.search
@@ -416,7 +428,7 @@ export function validateArgs<T>(schema: ZodSchema<T>, args: unknown): T {
 Added other types of validation for each Query/Mutation and tested on Apollo Server.
 
 
-# Bonus Points:
+## Bonus Points:
 ### *Discussing in your README how you would more complex error scenarios.*
 I think that it is great that GraphQL and Apollo already have error handling built in as it is important to receive clear error messages
 when building an application. It helps debugging quickly and efficiently and improves DX overall.
@@ -469,8 +481,7 @@ mutation deleteTasks{
 }
 ```
 
-
-  ## Challenges
+## Challenges
 * Relationships between Prisma/Pothos/Apollo were challenging to grasp at first.
 * Pothos was totally new and required some time to get used to.
 
@@ -485,8 +496,5 @@ from Pothos.
 * Creating the database with Prisma was enjoyable.
 * Pothos was new but the documentation was very clear which helped a lot.
 * Zod was also new and reminded me of Jest and so easier to handle.
-
-## Future Improvements
-* 
 
 ## THANKS FOR READING!
